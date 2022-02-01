@@ -1,152 +1,190 @@
-import java.sql.Array;
-import java.sql.Time;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+// Cryptarithmetic.java
+// Andrew Davison, ad@fivedots.coe.psu.ac.th, Jan 2022
+
+
+/* Solve Cryptarithmetic Problems
+   // https://en.wikipedia.org/wiki/Verbal_arithmetic
+
+  Cryptarithmetic is a mathematical game consisting of an equation using 
+  unknown numbers, whose digits are represented by letters of the alphabet. 
+
+  The goal is to identify the value of each letter. 
+
+  The classic example, published in the July 1924 issue of Strand Magazine by Henry Dudeney is:
+
+           SEND + MORE = MONEY 
+
+  One solution to this puzzle is:
+       O = 0, M = 1, Y = 2, E = 5, N = 6, D = 7, R = 8, and S = 9. 
+
+   -----------------------------
+   Usage:
+
+      > javac CryptArithmetic.java
+      
+      > java CryptArithmetic
+      Enter first string: send
+      Enter second string: more
+      Enter string sum: money
+
+      Calculating "send" + "more" == "money"
+      
+      send(2817) + more(368) == money(3185)
+        d:7;  e:8;  m:0;  n:1;  o:3;  r:6;  s:2;  y:5;
+      
+      send(2817) + more(368) == money(3185)
+        d:7;  e:8;  m:0;  n:1;  o:3;  r:6;  s:2;  y:5;
+      
+      send(2819) + more(368) == money(3187)
+        d:9;  e:8;  m:0;  n:1;  o:3;  r:6;  s:2;  y:7;
+      
+      send(2819) + more(368) == money(3187)
+        d:9;  e:8;  m:0;  n:1;  o:3;  r:6;  s:2;  y:7;
+      
+      send(3712) + more(467) == money(4179)
+        d:2;  e:7;  m:0;  n:1;  o:4;  r:6;  s:3;  y:9;
+      
+      send(3712) + more(467) == money(4179)
+        d:2;  e:7;  m:0;  n:1;  o:4;  r:6;  s:3;  y:9;
+
+             :
+      Elapsed time: 1.1 secs
+*/
+
+
+import java.util.*;
 
 public class CryptArithmetic
 {
-	static Scanner sc = new Scanner(System.in);
-	static ArrayList<Character> uniquechar = new ArrayList<Character>();
-	static int nos[] = {0,1,2,3,4,5,6,7,8,9};
-	static HashMap<Character, Integer> hm = new HashMap<Character, Integer>();
-	static int no1,no2,no3,count=0;
-	static boolean solutionfound=false;
-	static ArrayList<ArrayList<Integer>> permuts = new ArrayList<ArrayList<Integer>>();
-	static String s1,s2,s3;
-	
-	public static void main(String[] args) throws InterruptedException
-	{	
-		getInput();
-		System.out.println("Calculating. Please wait...");
-		long start = System.currentTimeMillis();
-		calculate();
-		long end = System.currentTimeMillis();
-		double time = (end-start)/1000.0;
-		System.out.println("Time required for execution: "+time+" seconds");
-	}
+  private static ArrayList<Character> letters = new ArrayList<>();
+  private static String s1, s2, sumStr;
 
-	public static void getInput()
-	{
-		System.out.println("Enter string 1:");
-		s1 = sc.nextLine();
-		System.out.println("Enter string 2:");
-		s2 = sc.nextLine();
-		System.out.println("Enter string 3:");
-		s3 = sc.nextLine();
-		
-		addToArrayList(s1);
-		addToArrayList(s2);
-		addToArrayList(s3);
-	}
-	
-	public static void calculate()
-	{
-		Collections.sort(uniquechar);
-		permute(nos, 0);
-		
-		for(int i=0;i<permuts.size();i++)
-		{
-			for(int j=0;j<uniquechar.size();j++)
-			{
-				hm.put(uniquechar.get(j),permuts.get(i).get(j));			
-			}
-		
-			no1 = getNumber(s1);
-			no2 = getNumber(s2);
-			no3 = getNumber(s3);
-			
-			if(no3==no1+no2 && getLengthOfInt(no1)==s1.length() && getLengthOfInt(no2)==s2.length() && getLengthOfInt(no3)==s3.length() && count<1)
-			{
-				solutionfound=true;
-				System.out.println(s1+":"+no1+"  "+s2+":"+no2+"  "+s3+":"+no3);
-				count++;
-			}	
-		}
-	
-		if(!solutionfound)
-			System.out.println("No solution found!");
+  private static int count = 0;
 
-	}
-	
-	public static void permute(int []a,int k )
+
+  public static void main(String[] args)
+  {
+    Scanner sc = new Scanner(System.in);
+    System.out.print("Enter first string: ");
+    s1 = sc.nextLine().trim().toLowerCase();
+
+    System.out.print("Enter second string: ");
+    s2 = sc.nextLine().trim().toLowerCase();
+
+    System.out.print("Enter string sum: ");
+    sumStr = sc.nextLine().trim().toLowerCase();
+
+    System.out.println("\nCalculating \"" + s1 + "\" + \"" + s2 + 
+                                "\" == \"" + sumStr + "\"");
+    
+    long start = System.currentTimeMillis();
+
+    addLetters(s1, letters);
+    addLetters(s2, letters);
+    addLetters(sumStr, letters);
+
+    int[] digits = {0,1,2,3,4,5,6,7,8,9};
+
+    matchWithLetters(digits, 0);
+
+    long now = System.currentTimeMillis();
+    System.out.println("Elapsed time: " + ((now - start) / 1000.0) + " secs");
+	System.out.println("all posible is : "+count);
+  } /* main */
+
+
+
+  public static void addLetters(String s, ArrayList<Character> letters)
+  {
+    for(int i=0; i < s.length(); i++) {
+      char ch = s.charAt(i);
+      if(!letters.contains(ch))
+        letters.add(ch);
+    }
+  }
+
+
+
+  private static void matchWithLetters(int[] digits, int pos)
+  {
+	if(pos==letters.size())
 	{
-		if(k==a.length)
+		int[] perm = {};
+		for(int i=0;i<letters.size();i++)
 		{
-			ArrayList<Integer> perm = new ArrayList<Integer>();
-			for(int i=0;i<a.length;i++)
-			{
-				perm.add(a[i]);
-			}
-			permuts.add(perm);
-		}	
-		else
-		{	
-			for (int i = k; i < a.length; i++)
-			{
-				int temp=a[k];
-				a[k]=a[i];
-				a[i]=temp;
-				permute(a,k+1);
-				temp=a[k];
-				a[k]=a[i];
-				a[i]=temp;
-			}
+			perm = Arrays.copyOf(perm, perm.length + 1);
+			perm[perm.length - 1] = digits[i];
+			//System.out.println(Arrays.toString(perm));
 		}
-	}
-	
-	public static boolean found(char c)
-	{
-		boolean flag=false;
-		for(int i=0;i<uniquechar.size();i++)
-		{
-			if(uniquechar.get(i)==c)
-				flag=true;
+		if(sumWorks(perm)){ //if found the solution backtrack now! -> not continue because when subsitution with next outcome it will false
+							// proof shown at fig.2
+			count++;
+			return;
 		}
-		if(flag)
-			return true;
-		else
-			return false;	
-	}
-	
-	public static void addToArrayList(String s)
-	{
-		for(int i=0;i<s.length();i++)
-		{
-			if(!found(s.charAt(i)))
-			{
-				uniquechar.add(s.charAt(i));
-			}
-		}
-	}
-	
-	public static void iterateHashMap()
+	}	
+	else
 	{	
-		for (Map.Entry<Character, Integer> entry : hm.entrySet()) 
+		for (int i = pos; i < digits.length; i++)
 		{
-		    char key = entry.getKey();
-		    int value = entry.getValue();
-		    
-		    System.out.println("Key:"+key+" Value:"+value);
+			int temp=digits[pos];
+			digits[pos]=digits[i];
+			digits[i]=temp;
+			matchWithLetters(digits,pos+1);
+			temp=digits[pos];
+			digits[pos]=digits[i];
+			digits[i]=temp;
 		}
 	}
-	
-	public static int getNumber(String s)
-	{
-		
-		String temp="";
-		for(int i=0;i<s.length();i++)
-		{
-			temp=temp+hm.get(s.charAt(i));
-		}
-		return Integer.parseInt(temp);
-	}
-	
-	public static int getLengthOfInt(int n)
-	{
-		 return String.valueOf(n).length();
-	}
-}
+  } /* matchWithLetters */
+
+
+
+
+  private static boolean sumWorks(int[] digits)
+  {
+    // pair letters with digits
+    TreeMap<Character, Integer> letterVals = new TreeMap<Character, Integer>();
+    for(int j=0; j < letters.size(); j++)
+      letterVals.put(letters.get(j),digits[j]);
+
+    // use map to convert strings to numbers
+    int no1 = evalNumber(s1, letterVals);
+    int no2 = evalNumber(s2, letterVals);
+    int sum = evalNumber(sumStr, letterVals);
+
+    // check if the calculation works
+    boolean hasSolution = false;
+    if(sum == no1+no2) {
+      hasSolution = true;
+      System.out.println("\n" + s1 + "(" + no1 + ") + " + s2 + "(" + no2 + 
+                         ") == " + sumStr + "(" + sum + ")");
+      listMap(letterVals);
+    }
+
+    return hasSolution;
+  } /* sumWorks */
+
+
+  private static int evalNumber(String s, TreeMap<Character,Integer> letterVals)
+  {
+    int val = 0;
+    for(int i = 0; i < s.length(); i++)
+      val = (10*val) + letterVals.get(s.charAt(i));
+    return val;
+  } /* evalNumber */
+
+
+
+  private static void listMap(TreeMap<Character, Integer> letterVals)
+  {
+    for (Map.Entry<Character, Integer> entry : letterVals.entrySet()) {
+      char key = entry.getKey();
+      int value = entry.getValue();
+      System.out.print("  " + key + ":" + value + ";");
+    }
+    System.out.println();
+  } 
+
+
+
+}  // end of Cryptarithmetic class
