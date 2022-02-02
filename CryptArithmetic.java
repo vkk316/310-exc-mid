@@ -59,9 +59,6 @@ public class CryptArithmetic
   private static ArrayList<Character> letters = new ArrayList<>();
   private static String s1, s2, sumStr;
 
-  private static int count = 0;
-
-
   public static void main(String[] args)
   {
     Scanner sc = new Scanner(System.in);
@@ -89,7 +86,6 @@ public class CryptArithmetic
 
     long now = System.currentTimeMillis();
     System.out.println("Elapsed time: " + ((now - start) / 1000.0) + " secs");
-	System.out.println("all posible is : "+count);
   } /* main */
 
 
@@ -118,7 +114,6 @@ public class CryptArithmetic
 		}
 		if(sumWorks(perm)){ //if found the solution backtrack now! -> not continue because when subsitution with next outcome it will false
 							// proof shown at fig.2
-			count++;
 			return;
 		}
 	}	
@@ -126,18 +121,19 @@ public class CryptArithmetic
 	{	
 		for (int i = pos; i < digits.length; i++)
 		{
-			int temp=digits[pos];
-			digits[pos]=digits[i];
-			digits[i]=temp;
+      swap(digits, pos, i); 
 			matchWithLetters(digits,pos+1);
-			temp=digits[pos];
-			digits[pos]=digits[i];
-			digits[i]=temp;
+      swap(digits, i, pos);
 		}
 	}
   } /* matchWithLetters */
 
-
+  private static void swap(int[] data, int i, int j) 
+  // swap ith and jth chars of the array
+  { int temp = data[i]; 
+    data[i] = data[j]; 
+    data[j] = temp; 
+  } 
 
 
   private static boolean sumWorks(int[] digits)
